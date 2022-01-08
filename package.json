@@ -1,0 +1,28 @@
+{
+  "name": "bot-discord",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RelryPeSan/bot-discord.git"
+  },
+  "author": "Relry Pereira dos Santos",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RelryPeSan/bot-discord/issues"
+  },
+  "homepage": "https://github.com/RelryPeSan/bot-discord#readme",
+  "dependencies": {
+    "@discordjs/builders": "^0.11.0",
+    "@discordjs/rest": "^0.2.0-canary.0",
+    "discord-api-types": "^0.26.1",
+    "discord.js": "^13.5.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.6.0"
+  }
+}
