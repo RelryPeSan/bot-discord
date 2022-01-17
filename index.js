@@ -3,7 +3,12 @@ const { Client, Collection, Intents, MessageActionRow, MessageButton, MessageEmb
 const config = require('./config.json');
 const whitelist = require('./whitelist/wl');
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+const client = new Client({ 
+    intents: [
+        Intents.FLAGS.GUILDS,
+        Intents.FLAGS.GUILD_MESSAGES
+    ] 
+});
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 client.commands = new Collection();
@@ -35,15 +40,12 @@ client.once("ready", () => {
     channel.send({ ephemeral: true, embeds: [embed], components: [row] });
 });
 
-client.on("guildMemberAdd", member => {
-    member.send("Seja bem vindo!");
-});
-
 client.on("messageCreate", message => {
     if(!message.author.bot) {
         const channel = message.channel;
         if(channel.name.includes(`${config.prefixChannelNameWL}-`)) {
-            whitelist.messageReceiveWL(message);
+            // message.guild.members.get(message.author.id).setNickname("TESTE 123");
+            whitelist.receiveMessageWL(message);
         }
     }
 });
@@ -58,6 +60,8 @@ client.on('interactionCreate', async interaction => {
             // console.log(interaction);
             await whitelist.receiveSelectMenuWL(interaction);
             await interaction.deferUpdate();
+            // interaction.channel.members.get(interaction.user.id).setNickname("TESTE");
+            // interaction.member.setNickname(``, "APROVADO na Whitelist");
         }
     }
 });

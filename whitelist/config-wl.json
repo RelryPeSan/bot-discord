@@ -1,25 +1,214 @@
 {
 	"perguntasAleatorias": true,
 	"respostasAleatorias": true,
-	"minimoAcertos": 1,
-	"perguntas": [
+	"minimoAcertos": 8,
+	"perguntasFixas": [
 		{
-			"pergunta": "Se você está em uma perseguição e acaba capotando o carro várias vezes e mesmo assim continua dirigindo, isso é considerado:",
-			"alternativas": [
-				{
-					"descricao": "Dark RP"
-				},
-				{
-					"descricao": "VDM"
-				},
-				{
-					"descricao": "Meta Gaming"
-				},
-				{
-					"descricao": "Power Gaming",
-					"resposta": true
-				}
-			]
+			"pergunta": "Primeiro nome do personagem:"
+		},
+		{
+			"pergunta": "ID do personagem apresentado no Fivem:"
 		}
+	],
+	"perguntas": [
+        {
+            "pergunta": "Se você está em uma perseguição e acaba capotando o carro várias vezes e mesmo assim continua dirigindo, isso é considerado:",
+            "alternativas": [
+                {
+                    "descricao": "Dark RP"
+                },
+                {
+                    "descricao": "VDM"
+                },
+                {
+                    "descricao": "Meta Gaming"
+                },
+                {
+                    "descricao": "Power Gaming",
+                    "resposta": true
+                }
+            ]
+        },
+        {
+            "pergunta": "Você está em uma ação e foi morto, como você procederia?",
+            "alternativas": [
+                {
+                    "descricao": "Esperaria um medico me reviver e voltaria para á ação"
+                },
+                {
+                    "descricao": "Depois de renascer voltaria para á ação"
+                },
+                {
+                    "descricao": "Esqueceria tudo e segueria o RP normalmente",
+                    "resposta": true
+                },
+                {
+                    "descricao": "Chamaria um staff para me revier"
+                }
+            ]
+        },
+        {
+            "pergunta": "Você recebe voz de assalto de dois bandidos armados mas também está armado, como procederia?",
+            "alternativas": [
+                {
+                    "descricao": "Pegaria um carro e fugiria dos bandidos"
+                },
+                {
+                    "descricao": "Atiraria contra os bandidos e os mataria"
+                },
+                {
+                    "descricao": "Chamaria a policia"
+                },
+                {
+                    "descricao": "Se renderia e passaria todos seus pertences",
+                    "resposta": true
+                }
+            ]
+        },
+        {
+            "pergunta": "Quando se deve sair do personagem?",
+            "alternativas": [
+                {
+                    "descricao": "Sempre que acontecer algo que não faça para do roleplay"
+                },
+                {
+                    "descricao": "Somente quando acontecer um anti roleplay"
+                },
+                {
+                    "descricao": "Nunca, sempre manter o personagem",
+                    "resposta": true
+                },
+                {
+                    "descricao": "Só quando outra pessoa sair do personagem"
+                }
+            ]
+        },
+        {
+            "pergunta": "Você é abordado pela policia e está armado, como procederia?",
+            "alternativas": [
+                {
+                    "descricao": "Levantaria as maos e depois mataria os policiais"
+                },
+                {
+                    "descricao": "Correria para um lugar seguro e depois mataria os policiais"
+                },
+                {
+                    "descricao": "Chamaria meus amigos através de um radio"
+                },
+                {
+                    "descricao": "Me renderia",
+                    "resposta": true
+                }
+            ]
+        },
+        {
+            "pergunta": "O que é MetaGaming",
+            "alternativas": [
+                {
+                    "descricao": "Utilizar discord em quanto joga"
+                },
+                {
+                    "descricao": "Falar em quando está desmaiado"
+                },
+                {
+                    "descricao": "Telar um streamer e usar informações obtidos na live no seu RP",
+                    "resposta": true
+                },
+                {
+                    "descricao": "Sair do personagem e falar coisas fora do RP"
+                }
+            ]
+        },
+        {
+            "pergunta": "O que é VDM",
+            "alternativas": [
+                {
+                    "descricao": "Roubar veiculos em locais safe"
+                },
+                {
+                    "descricao": "Matar alguém sem motivo"
+                },
+                {
+                    "descricao": "Abusar da mecanica do jogo",
+                    "resposta": true
+                },
+                {
+                    "descricao": "Usar um veiculo para matar alguém"
+                }
+            ]
+        },
+        {
+            "pergunta": "Você encontra seu Streamer/Youtuber favorito na cidade, como preocederia?",
+            "alternativas": [
+                {
+                    "descricao": "Continuaria meu RP pois não o conheço na cidade",
+                    "resposta": true
+                },
+                {
+                    "descricao": "Falaria que o acompanha e gosta de seu conteudo"
+                },
+                {
+                    "descricao": "Bateria nele para forçar um rp"
+                },
+                {
+                    "descricao": "Ficaria andando perto dele"
+                }
+            ]
+        },
+        {
+            "pergunta": "O que é PowerGaming",
+            "alternativas": [
+                {
+                    "descricao": "Ficar empinando com uma moto na frente da policia"
+                },
+                {
+                    "descricao": "Capotar um carro e continuar andando",
+                    "resposta": true
+                },
+                {
+                    "descricao": "Pular de altura alta e continuar andando",
+                    "resposta" : true
+                },
+                {
+                    "descricao": "Subir morros com veiculos esportivos"
+                }
+            ]
+        },
+        {
+            "pergunta": "Quais desses exemplos podemos considerar forçar RP?",
+            "alternativas": [
+                {
+                    "descricao": "Passar por uma viatura policial empinando uma moto ou derrapando um carro para gerar uma fuga",
+                    "resposta": true
+                },
+                {
+                    "descricao": "Você está com seu carro e vizualiza um monte de pessoas e os atropela por diversão"
+                },
+                {
+                    "descricao": "Você está com o seu carro quebrado e chama um mecânico"
+                },
+                {
+                    "descricao": "Você começa a telar um streamer e o sequestra usando informações obtidos na live"
+                }
+            ]
+        },
+        {
+            "pergunta": "Quais dessas situações estão inclusas em DarkRP?",
+            "alternativas": [
+                {
+                    "descricao": "Bater em algúem na praça, matar algúem sem motivo, agredir um npc e atropelar um animal"
+                },
+                {
+                    "descricao": "Direção perigosa, bater o veiculo várias vezes e ficar rapando com o carro"
+                },
+                {
+                    "descricao": "Racismo, homofobia e humilhar outro player",
+                    "resposta": true
+                },
+                {
+                    "descricao": "Matar outros players sem motivo"
+                }
+            ]
+        }
 	]
 }

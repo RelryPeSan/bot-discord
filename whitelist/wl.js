@@ -70,32 +70,34 @@ wl.createChannel = function(interaction) {
         data.storeChannel = storeChannel;
 
         data.perguntas = configPerguntas();
+        data.perguntasFixas = configPerguntasFixas();
         data.numPergunta = 0;
+        data.numPerguntaFixa = 0;
 
         dataUsersInWL.set(user.id, data);
 
-        wl.nextAswer(storeChannel, user.id);
+        wl.nextFixedAswer(storeChannel, user.id);
     })
     .catch(console.error);
 
-    interaction.reply(`<@${user.id}> ***Sua whitelist foi iniciada em outro canal.***\n\nEsta mensagem será excluida em poucos segundos!`);
+    interaction.reply(`<@${user.id}> ***Sua whitelist foi iniciada no canal: ${nomeCanal}***\n\nEsta mensagem será excluida em poucos segundos!`);
     setTimeout(() => {
         interaction.deleteReply();
     }, 10000);
 }
 
-wl.messageReceiveWL = function(message) {
+wl.receiveMessageWL = function(message) {
     const channel = message.channel;
     const user = message.author;
     const data = dataUsersInWL.get(user.id);
 
     if(data !== undefined) {
 
-        data.perguntas[data.numPergunta].resposta = message;
+        data.perguntasFixas[data.numPerguntaFixa].resposta = message;
 
-        data.numPergunta++;
+        data.numPerguntaFixa++;
 
-        wl.nextAswer(channel, user.id);
+        wl.nextFixedAswer(channel, user.id);
         console.log(`digitou: ${message}`)
         console.log("usuario em WL sendo removido agora!");
     } else {
@@ -121,13 +123,44 @@ wl.receiveSelectMenuWL = function(interaction) {
     }
 }
 
+wl.nextFixedAswer = function(channel, userId) {
+    const data = dataUsersInWL.get(userId);
+    if(data !== undefined) {
+        if(data.numPerguntaFixa >= data.perguntasFixas.length) {
+            wl.nextAswer(channel, userId);
+        } else {
+            const embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setTitle(`Informações:`)
+                .setDescription(`${data.perguntasFixas[data.numPerguntaFixa].pergunta}`);
+
+            channel.send({ ephemeral: true, embeds: [embed] });
+        }
+    }
+}
+
 wl.nextAswer = function(channel, userId) {
     const data = dataUsersInWL.get(userId);
     if(data !== undefined) {
         if(data.numPergunta >= data.perguntas.length) {
-            channel.send("Whitelist finalizada!");
+            const vr = validaRespostas(userId);
+            var respostaWL;
+            var colorTag;
+            if(vr) {
+                colorTag = '#00f99a';
+                respostaWL = `Whitelist finalizada! Você foi aprovado! :D`;
+            } else {
+                colorTag = '#aa0000';
+                respostaWL = `Whitelist finalizada! Você foi reprovado! :( Tente novamente.`;
+            }
+            const embed = new MessageEmbed()
+                .setColor(colorTag)
+                .setTitle(`Whitelist finalizada!`)
+                .setDescription(respostaWL);
+
+            channel.send({ ephemeral: true, embeds: [embed]});
             dataUsersInWL.delete(userId);
-            setTimeout(() => channel.delete("Whitelist finalizada!"), 5000);
+            setTimeout(() => channel.delete("Whitelist finalizada!"), 8000);
         } else {
             const alternativas = [];
             for(var i = 0; i < data.perguntas[data.numPergunta].alternativas.length; i++) {
@@ -147,17 +180,29 @@ wl.nextAswer = function(channel, userId) {
 
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setTitle(`Pergunta numero: ${data.numPergunta + 1}`)
+                .setTitle(`Pergunta: ${data.numPergunta + 1} de ${data.perguntas.length}`)
                 .setDescription(`${data.perguntas[data.numPergunta].pergunta}`);
 
-            channel.send({ content: 'BOT WL', ephemeral: true, embeds: [embed], components: [row] });
-
+            channel.send({ content: `=============== BOT WHITELIST ===============`, ephemeral: true, embeds: [embed], components: [row] });
         }
     }
 }
 
 function configPerguntas() {
     return config_wl.perguntas;
+}
+
+function configPerguntasFixas() {
+    return config_wl.perguntasFixas;
+}
+
+function validaRespostas(userId) {
+    const data = dataUsersInWL.get(userId);
+    const respondidasCorretamente = data.perguntas.filter((v) => {
+        const numResp = parseInt(v.resposta);
+        return (v.alternativas[numResp] !== undefined && v.alternativas[numResp].resposta == true);
+    });
+    return respondidasCorretamente.length >= config_wl.minimoAcertos;
 }
 
 module.exports = wl;
