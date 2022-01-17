@@ -1,12 +1,12 @@
 const fs = require('fs');
-const { Client, Collection, Intents, MessageActionRow, MessageButton, MessageEmbed, Permissions } = require('discord.js');
-const { token, channelId } = require('./config.json');
+const { Client, Collection, Intents, MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
+const config = require('./config.json');
+const whitelist = require('./whitelist/wl');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 client.commands = new Collection();
-
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
@@ -28,10 +28,11 @@ client.once("ready", () => {
             new MessageButton()
                 .setCustomId('init-wl')
                 .setLabel('INICIAR WL')
-                .setStyle('SUCCESS'));
+                .setStyle('SUCCESS')
+                .setEmoji('📑'));
 
-    const channel = client.channels.cache.get(channelId);
-    channel.send({ ephemeral: true, embeds: [embed], components: [row] })
+    const channel = client.channels.cache.get(config.channelIdCanalWL);
+    channel.send({ ephemeral: true, embeds: [embed], components: [row] });
 });
 
 client.on("guildMemberAdd", member => {
@@ -40,51 +41,33 @@ client.on("guildMemberAdd", member => {
 
 client.on("messageCreate", message => {
     if(!message.author.bot) {
-        if(message.content === "oi") {
-            message.reply("Olá! Este é meu primeiro bot!");
+        const channel = message.channel;
+        if(channel.name.includes(`${config.prefixChannelNameWL}-`)) {
+            whitelist.messageReceiveWL(message);
         }
     }
 });
 
-client.on('interactionCreate', interaction => {
-	if (!interaction.isButton()) return;
-
-    if(interaction.customId == "init-wl") {
-        console.log("if");
-        const user = interaction.user;
-        const server = interaction.guild;
-        // const member = interaction.member;
-    
-        const nomeCanal = "wl-teste-0001";
-    
-        server.channels.create(nomeCanal, {
-            type: "GUILD_TEXT",
-            reason: `Canal WL de ${user.tag}`,
-            permissionOverwrites: [
-                {
-                    type: 'role',
-                    id: "929246249679486977",
-                    deny: [Permissions.FLAGS.VIEW_CHANNEL]
-                },
-                {
-                    type: 'member',
-                    id: user.id,
-                    allow: [Permissions.FLAGS.VIEW_CHANNEL]
-                },
-                {
-                    type: 'role',
-                    id: "929249485366911017",
-                    allow: [Permissions.FLAGS.VIEW_CHANNEL]
-                }
-            ]
-        })
-        .catch(console.error);
-    
-        interaction.reply(`<@${user.id}> ***Sua whitelist foi iniciada em outro canal.***\n\nEsta mensagem será excluida em poucos segundos!`);
-        setTimeout(() => {
-            interaction.deleteReply();
-        }, 10000)
+client.on('interactionCreate', async interaction => {
+	if (interaction.isButton()) {
+        if(interaction.customId == "init-wl") {
+            whitelist.createChannel(interaction);
+        }
+    } else if (interaction.isSelectMenu()) {
+        if(interaction.customId == "select-menu-wl") {
+            // console.log(interaction);
+            await whitelist.receiveSelectMenuWL(interaction);
+            await interaction.deferUpdate();
+        }
     }
 });
 
-client.login(token);
+var ret = whitelist.validadeConfig();
+
+if(ret == 0) {
+    client.login(config.token);
+} else {
+    console.error("ERRO!!!");
+    console.error(ret);
+    return 1;
+}

@@ -1,0 +1,25 @@
+{
+	"perguntasAleatorias": true,
+	"respostasAleatorias": true,
+	"minimoAcertos": 1,
+	"perguntas": [
+		{
+			"pergunta": "Se você está em uma perseguição e acaba capotando o carro várias vezes e mesmo assim continua dirigindo, isso é considerado:",
+			"alternativas": [
+				{
+					"descricao": "Dark RP"
+				},
+				{
+					"descricao": "VDM"
+				},
+				{
+					"descricao": "Meta Gaming"
+				},
+				{
+					"descricao": "Power Gaming",
+					"resposta": true
+				}
+			]
+		}
+	]
+}
