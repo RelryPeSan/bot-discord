@@ -1,10 +1,11 @@
 {
+    "tempoQuestionarioMin": 5,
 	"perguntasAleatorias": true,
 	"respostasAleatorias": true,
 	"minimoAcertos": 8,
 	"perguntasFixas": [
 		{
-			"pergunta": "Primeiro nome do personagem:"
+			"pergunta": "Nome e Sobrenome do personagem:"
 		},
 		{
 			"pergunta": "ID do personagem apresentado no Fivem:"

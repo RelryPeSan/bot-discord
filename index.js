@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { Client, Collection, Intents, MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
+const { Client, Collection, Intents } = require('discord.js');
 const config = require('./config.json');
 const whitelist = require('./whitelist/wl');
 
@@ -9,42 +9,32 @@ const client = new Client({
         Intents.FLAGS.GUILD_MESSAGES
     ] 
 });
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 client.commands = new Collection();
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
-	// Set a new item in the Collection
-	// With the key as the command name and the value as the exported module
 	client.commands.set(command.data.name, command);
 }
 
 client.once("ready", () => {
     console.log(`BOT online: ${client.user.tag}`);
-
-    const embed = new MessageEmbed()
-        .setColor('#f73305')
-        .setTitle('Sistema de whitelist!')
-        .setDescription(`Para fazer sua whitelist pressione o botão abaixo\n\n**ATENÇÃO:** Será criado um novo canal para iniciar sua WL.`);
-
-    const row = new MessageActionRow()
-        .addComponents(
-            new MessageButton()
-                .setCustomId('init-wl')
-                .setLabel('INICIAR WL')
-                .setStyle('SUCCESS')
-                .setEmoji('📑'));
-
-    const channel = client.channels.cache.get(config.channelIdCanalWL);
-    channel.send({ ephemeral: true, embeds: [embed], components: [row] });
 });
 
-client.on("messageCreate", message => {
+client.on("guildMemberAdd", member => {
+    console.log("teste")
+    console.log("!member.user.bot: " + toString(!member.user.bot))
+    if(!member.user.bot) {
+        console.log("teste no if")
+        whitelist.newerMember(member);
+    }
+});
+
+client.on("messageCreate", async message => {
     if(!message.author.bot) {
         const channel = message.channel;
         if(channel.name.includes(`${config.prefixChannelNameWL}-`)) {
-            // message.guild.members.get(message.author.id).setNickname("TESTE 123");
             whitelist.receiveMessageWL(message);
         }
     }
@@ -52,16 +42,30 @@ client.on("messageCreate", message => {
 
 client.on('interactionCreate', async interaction => {
 	if (interaction.isButton()) {
-        if(interaction.customId == "init-wl") {
-            whitelist.createChannel(interaction);
+        switch(interaction.customId) {
+            case "init-wl":
+                await whitelist.createChannel(interaction);
+                break;
+
+            case "finished-wl":
+                await whitelist.confirmButtonWL(interaction);
+                break;
         }
     } else if (interaction.isSelectMenu()) {
-        if(interaction.customId == "select-menu-wl") {
-            // console.log(interaction);
+        if(interaction.customId.includes("select-menu-wl-")) {
             await whitelist.receiveSelectMenuWL(interaction);
             await interaction.deferUpdate();
-            // interaction.channel.members.get(interaction.user.id).setNickname("TESTE");
-            // interaction.member.setNickname(``, "APROVADO na Whitelist");
+        }
+    } else if (interaction.isCommand()) {
+        const { commandName } = interaction;
+        const command = client.commands.get(commandName);
+        if(command !== undefined) {
+            try {
+                await command.execute(interaction);
+            } catch (error) {
+                console.error(error);
+                await interaction.reply({ content: 'Ocorreu um erro ao executar este comando!', ephemeral: true });
+            }
         }
     }
 });
