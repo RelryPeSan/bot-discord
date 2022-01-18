@@ -9,6 +9,8 @@ const prefixSelecMenu = "select-menu-wl-";
 var roleComWL;
 var roleSemWL;
 var owner;
+var channelAprovados;
+var channelReprovados;
 
 var wlNumber = 1;
 var dataUsersInWL = new Collection();
@@ -68,6 +70,9 @@ wl.readyInit = async function(client) {
                 
     roleSemWL = await guild.roles.cache.find(r => r.id == config.roleIdSemWL);
     roleComWL = await guild.roles.cache.find(r => r.id == config.roleIdComWL);
+    
+    channelAprovados = await guild.channels.cache.get(config.channelIdAprovados);
+    channelReprovados = await guild.channels.cache.get(config.channelIdReprovados);
 }
 
 wl.validadeReady = function() {
@@ -81,6 +86,14 @@ wl.validadeReady = function() {
 
     if(owner === undefined) {
         return `A variavel "owner" não foi encontrada, verifique se o bot possui as permissões necesserias dentro do servidor.`;
+    }
+
+    if(channelAprovados === undefined) {
+        return `A variavel "channelAprovados" não foi encontrada, verifique o id informado em config.js > "channelIdAprovados".`;
+    }
+
+    if(channelReprovados === undefined) {
+        return `A variavel "channelReprovados" não foi encontrada, verifique o id informado em config.js > "channelIdReprovados".`;
     }
 
     return 0;
@@ -103,7 +116,6 @@ wl.createChannel = async function(interaction) {
         return;
     }
 
-    data.questions = {};
     data.user = user;
     data.wlNumber = wlNumber;
 
@@ -287,10 +299,10 @@ wl.confirmButtonWL = async function(interaction) {
     const userId = interaction.user.id;
     const data = dataUsersInWL.get(userId);
     if(data !== undefined) {
-        const vr = validaRespostas(userId);
+        data.isAprovado = validaRespostas(userId);
         var respostaWL;
         var colorTag;
-        if(vr) {
+        if(data.isAprovado) {
             colorTag = '#00f933';
             respostaWL = `Whitelist finalizada! Você foi aprovado! :D`;
             if(userId !== owner.id) {
@@ -308,17 +320,80 @@ wl.confirmButtonWL = async function(interaction) {
             .setColor(colorTag)
             .setTitle(`Whitelist finalizada!`)
             .setDescription(respostaWL);
-    
+
         channel.send({ ephemeral: true, embeds: [embed]});
+        sendResponseChannel(data);
         dataUsersInWL.delete(userId);
         setTimeout(() => channel.delete("Whitelist finalizada!"), 10000);
     }
     await interaction.deferUpdate();
 }
 
-function configPerguntas() {
-    return config_wl.perguntas;
+function sendResponseChannel(data) {
+    var tagColor;
+
+    if(data.isAprovado) {
+        tagColor = '#00f933';
+    } else {
+        tagColor = '#f73305';
+    }
+
+    const embed = new MessageEmbed()
+        .setColor(tagColor)
+        .setTitle('Resultado da Whitelist')
+        // .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
+        // .setDescription('Some description here')
+        .setThumbnail(config.thumbnailLogo)
+        .addFields(
+            { name: 'USUÁRIO', value: `<@${data.user.id}>` },
+            { name: 'NOME DO PERSONAGEM', value: `${data.perguntasFixas[0].resposta}`, inline: true },
+            { name: 'ID', value: `${data.perguntasFixas[1].resposta}`, inline: true },
+            // { name: '\u200B', value: '\u200B' },
+            { name: 'RESULTADO', value: `${data.isAprovado ? "APROVADO" : "REPROVADO"}` },
+            { name: 'PONTUAÇÃO', value: `${data.respondidasCorretamente.length}/${data.perguntas.length}`, inline: true },
+            { name: 'MIN.', value: `${config_wl.minimoAcertos}`, inline: true },
+        )
+        // .setImage('https://i.imgur.com/AfFp7pu.png')
+        .setTimestamp();
+
+    if(data.isAprovado) {
+        channelAprovados.send({ embeds: [embed] });
+    } else {
+        channelReprovados.send({ embeds: [embed] });
+    }
 }
+
+function configPerguntas() {
+    var perguntas = config_wl.perguntas;
+
+    if(config_wl.perguntasAleatorias) {
+        perguntas = shuffle(perguntas);
+    }
+
+    if(config_wl.respostasAleatorias) {
+        perguntas.forEach(e => {
+            e.alternativas = shuffle(e.alternativas);
+        });
+    }
+
+    return perguntas;
+}
+
+function shuffle(array) {
+    let currentIndex = array.length;
+  
+    // While there remain elements to shuffle...
+    while (currentIndex != 0) {
+        // Pick a remaining element...
+        var randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+  
+    return array;
+  }
 
 function configPerguntasFixas() {
     return config_wl.perguntasFixas;
@@ -326,11 +401,11 @@ function configPerguntasFixas() {
 
 function validaRespostas(userId) {
     const data = dataUsersInWL.get(userId);
-    const respondidasCorretamente = data.perguntas.filter((v) => {
+    data.respondidasCorretamente = data.perguntas.filter((v) => {
         const numResp = parseInt(v.resposta);
         return (v.alternativas[numResp] !== undefined && v.alternativas[numResp].resposta == true);
     });
-    return respondidasCorretamente.length >= config_wl.minimoAcertos;
+    return data.respondidasCorretamente.length >= config_wl.minimoAcertos;
 }
 
 module.exports = wl;
