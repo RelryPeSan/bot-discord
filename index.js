@@ -2,6 +2,7 @@ const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 const config = require('./config.json');
 const whitelist = require('./whitelist/wl');
+const { exit } = require('process');
 
 const client = new Client({ 
     intents: [
@@ -18,7 +19,16 @@ for (const file of commandFiles) {
 	client.commands.set(command.data.name, command);
 }
 
-client.once("ready", () => {
+client.once("ready", async (clientReady) => {
+    await whitelist.readyInit(clientReady);
+    const ret = whitelist.validadeReady();
+    
+    if(ret != 0) {
+        console.error("ERRO!!!");
+        console.error(ret);
+        exit(1);
+    }
+
     console.log(`BOT online: ${client.user.tag}`);
 });
 

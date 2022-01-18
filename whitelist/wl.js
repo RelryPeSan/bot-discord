@@ -15,11 +15,39 @@ var dataUsersInWL = new Collection();
 
 wl.validadeConfig = function() {
 
-    if(config_wl.perguntasFixas.length != 2) {
+    if(config_wl.tempoQuestionarioMin === undefined) {
+        return "config_wl.tempoQuestionarioMin > deve ser definido.";
+    } else if(typeof(config_wl.tempoQuestionarioMin) !== "number") {
+        return "config_wl.tempoQuestionarioMin > deve ser numerico.";
+    }
+
+    if(config_wl.perguntasAleatorias === undefined) {
+        return "config_wl.perguntasAleatorias > deve ser definido.";
+    } else if(typeof(config_wl.perguntasAleatorias) !== "boolean") {
+        return "config_wl.perguntasAleatorias > deve ser booleano ( true | false ).";
+    }
+
+    if(config_wl.respostasAleatorias === undefined) {
+        return "config_wl.respostasAleatorias > deve ser definido.";
+    } else if(typeof(config_wl.respostasAleatorias) !== "boolean") {
+        return "config_wl.respostasAleatorias > deve ser booleano ( true | false ).";
+    }
+
+    if(config_wl.minimoAcertos === undefined) {
+        return "config_wl.minimoAcertos > deve ser definido.";
+    } else if(typeof(config_wl.minimoAcertos) !== "number") {
+        return "config_wl.minimoAcertos > deve ser numerico.";
+    }
+
+    if(config_wl.perguntasFixas === undefined) {
+        return "config_wl.perguntasFixas > deve ser definido.";
+    } else if(config_wl.perguntasFixas.length != 2) {
         return `Pergunstas fixas devem ter o tamanho de 2 ("perguntasFixas") para informar o nome e ID do jogo.`;
     }
 
-    if(config_wl.perguntas.length < config_wl.minimoAcertos) {
+    if(config_wl.perguntas === undefined) {
+        return "config_wl.perguntas > deve ser definido.";
+    } else if(config_wl.perguntas.length < config_wl.minimoAcertos) {
         return `Quantidade minima de acertos("minimoAcertos") superior a quantidade de "perguntas".`;
     }
 
@@ -38,8 +66,24 @@ wl.readyInit = async function(client) {
     const guild = client.guilds.cache.get(config.guildId);
     owner = await guild.fetchOwner();
                 
-    roleComWL = guild.roles.cache.find(r => r.id == config.roleIdComWL);
-    roleSemWL = guild.roles.cache.find(r => r.id == config.roleIdSemWL);
+    roleSemWL = await guild.roles.cache.find(r => r.id == config.roleIdSemWL);
+    roleComWL = await guild.roles.cache.find(r => r.id == config.roleIdComWL);
+}
+
+wl.validadeReady = function() {
+    if(roleSemWL === undefined) {
+        return `A variavel "roleSemWL" não foi encontrada, verifique o id informado em config.js > "roleIdSemWL"`;
+    }
+
+    if(roleComWL === undefined) {
+        return `A variavel "roleComWL" não foi encontrada, verifique o id informado em config.js > "roleIdComWL"`;
+    }
+
+    if(owner === undefined) {
+        return `A variavel "owner" não foi encontrada, verifique se o bot possui as permissões necesserias dentro do servidor.`;
+    }
+
+    return 0;
 }
 
 wl.newerMember = function(member) {
