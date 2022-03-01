@@ -1,14 +1,14 @@
 {
+    "alternativaNoMenuSelecao": false,
     "tempoQuestionarioMin": 5,
+    "tentativasAntesBloqueio": 2,
+    "tempoBloqueioMin": 30,
 	"perguntasAleatorias": true,
 	"respostasAleatorias": true,
-	"minimoAcertos": 8,
+	"minimoAcertos": 1,
 	"perguntasFixas": [
 		{
 			"pergunta": "Nome e Sobrenome do personagem:"
-		},
-		{
-			"pergunta": "ID do personagem apresentado no Fivem:"
 		}
 	],
 	"perguntas": [
@@ -112,7 +112,7 @@
                     "descricao": "Falar em quando está desmaiado"
                 },
                 {
-                    "descricao": "Telar um streamer e usar informações obtidos na live no seu RP",
+                    "descricao": "Aproveitar de informações externas e levar pro jogo",
                     "resposta": true
                 },
                 {

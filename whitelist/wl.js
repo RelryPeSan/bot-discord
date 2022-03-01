@@ -1,7 +1,8 @@
-const { Collection, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, Permissions } = require('discord.js');
+// eslint-disable-next-line no-unused-vars
+const { Client, ButtonInteraction, SelectMenuInteraction, TextChannel, CacheType, Collection, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, Permissions, GuildMember, Message } = require('discord.js');
 const config = require('../config.json');
 const config_wl = require('./config-wl.json');
-// const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+const database = require('./database');
 
 const wl = {};
 const prefixSelecMenu = "select-menu-wl-";
@@ -16,6 +17,12 @@ var wlNumber = 1;
 var dataUsersInWL = new Collection();
 
 wl.validadeConfig = function() {
+
+    if(config_wl.alternativaNoMenuSelecao === undefined) {
+        return "config_wl.alternativaNoMenuSelecao > deve ser definido.";
+    } else if(typeof(config_wl.alternativaNoMenuSelecao) !== "boolean") {
+        return "config_wl.alternativaNoMenuSelecao > deve ser booleano ( true | false ).";
+    }
 
     if(config_wl.tempoQuestionarioMin === undefined) {
         return "config_wl.tempoQuestionarioMin > deve ser definido.";
@@ -39,12 +46,14 @@ wl.validadeConfig = function() {
         return "config_wl.minimoAcertos > deve ser definido.";
     } else if(typeof(config_wl.minimoAcertos) !== "number") {
         return "config_wl.minimoAcertos > deve ser numerico.";
+    } else if(config_wl.minimoAcertos < 0) {
+        return "config_wl.minimoAcertos > deve ser um numero inteiro positivo.";
     }
 
     if(config_wl.perguntasFixas === undefined) {
         return "config_wl.perguntasFixas > deve ser definido.";
-    } else if(config_wl.perguntasFixas.length != 2) {
-        return `Pergunstas fixas devem ter o tamanho de 2 ("perguntasFixas") para informar o nome e ID do jogo.`;
+    } else if(config_wl.perguntasFixas.length != 1) {
+        return `Pergunstas fixas deve ter o tamanho de 1 ("perguntasFixas") para informar o nome do personagem do jogo.`;
     }
 
     if(config_wl.perguntas === undefined) {
@@ -64,6 +73,10 @@ wl.validadeConfig = function() {
     return 0;
 }
 
+/**
+ * 
+ * @param {Client<boolean>} client 
+ */
 wl.readyInit = async function(client) {
     const guild = client.guilds.cache.get(config.guildId);
     owner = await guild.fetchOwner();
@@ -96,31 +109,61 @@ wl.validadeReady = function() {
         return `A variavel "channelReprovados" não foi encontrada, verifique o id informado em config.js > "channelIdReprovados".`;
     }
 
+    if(config.useDatabase) {
+        database.connect();
+    }
+
     return 0;
 }
 
+/**
+ * 
+ * @param {GuildMember} member 
+ */
 wl.newerMember = function(member) {
     member.roles.add(roleSemWL);
 }
 
+/**
+ * 
+ * @param {ButtonInteraction<CacheType>} interaction 
+ * @returns 
+ */
 wl.createChannel = async function(interaction) {
     const user = interaction.user;
     const server = interaction.guild;
     const data = {};
     
     if(dataUsersInWL.get(user.id) !== undefined) {
-        await interaction.reply(`<@${user.id}> ***Você já possui um canal aberto para WL.***\n\nEsta mensagem será excluida em poucos segundos!`);
-        setTimeout(() => {
-            interaction.deleteReply();
-        }, 10000)
+        await interaction.reply({ content: `<@${user.id}> ***Você já possui um canal aberto para WL.***\n\nEsta mensagem será excluida em poucos segundos!`, ephemeral: true });
+        // setTimeout(() => { // comentado porque não é possivel deletar um reply do tipo Ephemeral
+        //     interaction.deleteReply();
+        // }, 10000)
         return;
     }
 
     data.user = user;
     data.wlNumber = wlNumber;
 
-    const nomeCanal = `wl-${`${wlNumber}`.padStart(6, '0')}`;
+    const tag = user.tag.replaceAll("#", "");
+
+    const nomeCanal = `wl-${tag}-${`${wlNumber}`.padStart(4, '0')}`.toLowerCase();
     wlNumber++;
+
+    if(config.useDatabase) {
+        const result = await database.searchIdFivemByIdDiscord(user.id);
+
+        if(result === undefined) {
+            await interaction.reply({ content: `<@${user.id}> **Tente conectar na cidade primeiro para gerar seu ID**\n\n**IMPORTANTE:** Seu fivem precisa ter o discord vinculado.`, ephemeral: true });
+            // setTimeout(() => { // comentado porque não é possivel deletar um reply do tipo Ephemeral
+            //     interaction.deleteReply()
+            //     .catch((err) => { console.error(`Erro ao deletar interação!\nERRO: ${err}`); });
+            // }, 15000);
+            return
+        }
+
+        data.id_fivem = result.user_id;
+    }
 
     server.channels.create(nomeCanal, {
         type: "GUILD_TEXT",
@@ -166,10 +209,10 @@ wl.createChannel = async function(interaction) {
     })
     .catch(console.error);
 
-    await interaction.reply(`<@${user.id}> ***Sua whitelist foi iniciada no canal: ${nomeCanal}***\n\nEsta mensagem será excluida em poucos segundos!`);
-    setTimeout(() => {
-        interaction.deleteReply();
-    }, 10000);
+    await interaction.reply({ content: `<@${user.id}> ***Sua whitelist foi iniciada no canal: ${nomeCanal}***`, ephemeral: true });
+    // setTimeout(() => { // comentado porque não é possivel deletar um reply do tipo Ephemeral
+    //     interaction.deleteReply();
+    // }, 10000);
 
     setTimeout(() => {
         const data2 = dataUsersInWL.get(user.id);
@@ -193,6 +236,10 @@ wl.createChannel = async function(interaction) {
     }, config_wl.tempoQuestionarioMin * 60000);
 }
 
+/**
+ * 
+ * @param {Message<boolean>} message 
+ */
 wl.receiveMessageWL = function(message) {
     const channel = message.channel;
     const user = message.author;
@@ -213,6 +260,10 @@ wl.receiveMessageWL = function(message) {
     }
 }
 
+/**
+ * 
+ * @param {SelectMenuInteraction<CacheType>} interaction 
+ */
 wl.receiveSelectMenuWL = function(interaction) {
     const channel = interaction.channel;
     const user = interaction.user;
@@ -232,6 +283,11 @@ wl.receiveSelectMenuWL = function(interaction) {
     }
 }
 
+/**
+ * 
+ * @param {TextChannel} channel 
+ * @param {String} userId 
+ */
 wl.nextFixedAswer = function(channel, userId) {
     const data = dataUsersInWL.get(userId);
     if(data !== undefined) {
@@ -248,6 +304,11 @@ wl.nextFixedAswer = function(channel, userId) {
     }
 }
 
+/**
+ * 
+ * @param {TextChannel} channel 
+ * @param {String} userId 
+ */
 wl.nextAswer = function(channel, userId) {
     const data = dataUsersInWL.get(userId);
     if(data !== undefined) {
@@ -269,11 +330,14 @@ wl.nextAswer = function(channel, userId) {
             channel.send({ ephemeral: true, embeds: [embed], components: [row] });
         } else {
             const alternativas = [];
+            var descAlternativas = "";
             for(var i = 0; i < data.perguntas[data.numPergunta].alternativas.length; i++) {
+                var alternativa = `${(i+1) + " - " + data.perguntas[data.numPergunta].alternativas[i].descricao}`;
                 alternativas.push({
-                    label: `${(i+1) + " - " + data.perguntas[data.numPergunta].alternativas[i].descricao}`,
+                    label: `${config_wl.alternativaNoMenuSelecao ? alternativa : ""+(i+1)}`,
                     value: `${i}`
                 });
+                descAlternativas += `\n${alternativa}`;
             }
 
             const row = new MessageActionRow()
@@ -287,13 +351,17 @@ wl.nextAswer = function(channel, userId) {
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle(`Pergunta: ${data.numPergunta + 1} de ${data.perguntas.length}`)
-                .setDescription(`${data.perguntas[data.numPergunta].pergunta}`);
+                .setDescription(`${data.perguntas[data.numPergunta].pergunta}${config_wl.alternativaNoMenuSelecao ? "" : "\n"+descAlternativas}`);
 
-            channel.send({ content: `\n──────────── BOT WHITELIST ────────────`, ephemeral: true, embeds: [embed], components: [row] });
+            channel.send({ content: `\n──────────── WHITELIST ────────────`, ephemeral: true, embeds: [embed], components: [row] });
         }
     }
 }
 
+/**
+ * 
+ * @param {ButtonInteraction<CacheType>} interaction 
+ */
 wl.confirmButtonWL = async function(interaction) {
     const channel = interaction.channel;
     const userId = interaction.user.id;
@@ -306,11 +374,14 @@ wl.confirmButtonWL = async function(interaction) {
             colorTag = '#00f933';
             respostaWL = `Whitelist finalizada! Você foi aprovado! :D`;
             if(userId !== owner.id) {
-                interaction.member.setNickname(`${data.perguntasFixas[0].resposta} | ${data.perguntasFixas[1].resposta}`, "APROVADO na Whitelist");
-                interaction.member.roles.remove(roleSemWL);
-                interaction.member.roles.add(roleComWL);
+                interaction.member.setNickname(`${data.perguntasFixas[0].resposta} | ${data.id_fivem}`, "APROVADO na Whitelist");
             } else {
-                channel.send("ATENÇÃO!!! O bot não tem permissão para alterar nick e cargo do dono do servidor!");
+                channel.send("ATENÇÃO!!! O bot não tem permissão para alterar nick do dono do servidor!");
+            }
+            interaction.member.roles.remove(roleSemWL);
+            interaction.member.roles.add(roleComWL);
+            if(config.useDatabase) {
+                database.whitelistUSerId(data.id_fivem);
             }
         } else {
             colorTag = '#f73305';
@@ -322,14 +393,14 @@ wl.confirmButtonWL = async function(interaction) {
             .setDescription(respostaWL);
 
         channel.send({ ephemeral: true, embeds: [embed]});
-        sendResponseChannel(data);
+        sendLogWhitelistChannel(data);
         dataUsersInWL.delete(userId);
         setTimeout(() => channel.delete("Whitelist finalizada!"), 10000);
     }
     await interaction.deferUpdate();
 }
 
-function sendResponseChannel(data) {
+function sendLogWhitelistChannel(data) {
     var tagColor;
 
     if(data.isAprovado) {
@@ -347,7 +418,7 @@ function sendResponseChannel(data) {
         .addFields(
             { name: 'USUÁRIO', value: `<@${data.user.id}>` },
             { name: 'NOME DO PERSONAGEM', value: `${data.perguntasFixas[0].resposta}`, inline: true },
-            { name: 'ID', value: `${data.perguntasFixas[1].resposta}`, inline: true },
+            { name: 'ID', value: `${data.id_fivem}`, inline: true },
             // { name: '\u200B', value: '\u200B' },
             { name: 'RESULTADO', value: `${data.isAprovado ? "APROVADO" : "REPROVADO"}` },
             { name: 'PONTUAÇÃO', value: `${data.respondidasCorretamente.length}/${data.perguntas.length}`, inline: true },
