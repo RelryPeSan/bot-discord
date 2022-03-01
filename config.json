@@ -1,0 +1,29 @@
+{
+	"serverIp": "127.0.0.1",
+	"serverPort": "30120",
+
+	"clientId": "ID_CLIENT_BOT",
+	"guildId": "ID_SERVIDOR",
+	"token": "TOKEN_BOT",
+
+	"categoryIdCanalWL": "ID_CATEGORIA_ONDE_SERA_CRIADO_OS_CANAIS_WL",
+	"channelIdAprovados": "ID_CANAL_LOGS_MEMBROS_APROVADOS_NA_WL",
+	"channelIdReprovados": "ID_CANAL_LOGS_MEMBROS_REAPROVADOS_NA_WL",
+	
+	"roleIdAdministrador": "ID_CARGO_ADMINISTRADOR_SERVIDOR",
+	"roleIdComWL": "ID_CARGO_COM_WL_NO_SERVER",
+	"roleIdSemWL": "ID_CARGO_SEM_WL_NO_SERVER",
+
+	"prefixChannelNameWL": "wl",
+
+	"thumbnailLogo": "URL_IMAGEM_USADO_EM_MENSAGENS_OU_USAR_LOGO_SERVIDOR",
+
+	"useDatabase": true,
+	"db": {
+		"host": "localhost",
+		"database": "database",
+		"username": "username",
+		"password": "password"
+	}
+
+}

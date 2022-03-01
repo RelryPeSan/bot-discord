@@ -172,7 +172,7 @@ wl.createChannel = async function(interaction) {
         permissionOverwrites: [
             {
                 type: 'role',
-                id: config.roleIdEveryone,
+                id: config.guildId,
                 deny: [Permissions.FLAGS.VIEW_CHANNEL]
             },
             {

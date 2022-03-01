@@ -28,6 +28,7 @@ module.exports = {
 	 * @param {String[]} args 
 	 * @returns 
 	 */
+	// eslint-disable-next-line no-unused-vars
 	run: async (client, interaction, args) => {
 		
 		const optionTipo = interaction.options.getString('tipo');

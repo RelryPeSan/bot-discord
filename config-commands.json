@@ -1,0 +1,16 @@
+{
+	"conexao": {
+		"corMensagem": "#f73305",
+		"titulo": "CONEXÃO!",
+		"descricao": "Para se conectar em nossa cidade apenas pressione o botão ou copie o codigo abaixo e cole em seu console dentro do FiveM.",
+		"mostrarConnect": true,
+		"urlImageGif": "URL_IMAGEM_ENVIADO_NA_MENSAGEM_PODE_SER_UM_GIF",
+		"urlBotaoJogar": "URL_ONDE_SERA_REDIRECIONADO"
+	},
+	"whitelist": {
+		"corMensagem": "#f73305",
+		"titulo": "CONEXÃO!",
+		"descricao": "Para fazer sua whitelist pressione o botão abaixo\n\n**ATENÇÃO:** Será criado um novo canal para iniciar sua WL.",
+		"labelBotaoWL": "INICIAR WL"
+	}
+}
